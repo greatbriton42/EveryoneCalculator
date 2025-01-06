@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <script>
+        window.addEventListener("load", function (evt) {
+
+            var output = document.getElementById("output");
+            var input = document.getElementById("input");
+            var yourOutput = document.getElementById("your-output");
+            var ws;
+
+            var print = function (message) {
+                var d = document.createElement("div");
+                d.textContent = message;
+                output.appendChild(d);
+                output.scroll(0, output.scrollHeight);
+            };
+
+            var printSelf = function (message) {
+                var d = document.createElement("div");
+                d.textContent = message;
+                yourOutput.appendChild(d);
+                yourOutput.scroll(0, yourOutput.scrollHeight);
+            };
+
+            document.getElementById("open").onclick = function (evt) {
+                if (ws) {
+                    return false;
+                }
+                ws = new WebSocket("{{.}}");
+                ws.onopen = function (evt) {
+                    print("OPEN");
+                }
+                ws.onclose = function (evt) {
+                    print("CLOSE");
+                    ws = null;
+                }
+                ws.onmessage = function (evt) {
+                    print(evt.data);
+                }
+                ws.onerror = function (evt) {
+                    print("ERROR: " + evt.data);
+                }
+                return false;
+            };
+
+            document.getElementById("send").onclick = function (evt) {
+                if (!ws) {
+                    return false;
+                }
+                name = document.getElementById("name").value
+                printSelf(input.value);
+                const data = {
+                    name: name,
+                    expression: input.value
+                }
+                ws.send(JSON.stringify(data));
+                return false;
+            };
+
+            document.getElementById("close").onclick = function (evt) {
+                if (!ws) {
+                    return false;
+                }
+                ws.close();
+                return false;
+            };
+
+            document.getElementById("AC").onclick = function (evt) {
+                document.getElementById("input").value = ""
+            };
+
+            symbolElements = document.getElementsByClassName("symbol")
+
+            for (let i = 0; i < symbolElements.length; i++) {
+                symbolElements[i].addEventListener("click", function (evt) {
+                    let symbol = evt.target.textContent
+                    document.getElementById("input").value += symbol
+                })
+            }
+        });
+    </script>
+</head>
+
+<body>
+    <table>
+        <tr>
+            <td valign="top" width="50%">
+                <p>Click "Open" to create a connection to the server,
+                    "Send" to send a message to the server and "Close" to close the connection.
+                    Example Message
+                </p>
+                <form>
+                    <button id="open">Open</button>
+                    <button id="close">Close</button>
+                    <p>
+                        <label>Name</label>
+                        <input id="name" type="text">
+                    </p>
+                    <p><input id="input" type="text" readonly>
+                        <button id="send">Calculate</button>
+                    </p>
+                    <div>
+                        <button type="button" id="7" class="symbol">7</button>
+                        <button type="button" id="8" class="symbol">8</button>
+                        <button type="button" id="9" class="symbol">9</button>
+                        <button type="button" id="*" class="symbol">*</button>
+                    </div>
+                    <div>
+                        <button type="button" id="4" class="symbol">4</button>
+                        <button type="button" id="5" class="symbol">5</button>
+                        <button type="button" id="6" class="symbol">6</button>
+                        <button type="button" id="-" class="symbol">-</button>
+                    </div>
+                    <div>
+                        <button type="button" id="1" class="symbol">1</button>
+                        <button type="button" id="2" class="symbol">2</button>
+                        <button type="button" id="3" class="symbol">3</button>
+                        <button type="button" id="+" class="symbol">+</button>
+                    </div>
+                    <div>
+                        <button type="button" id="AC">AC</button>
+                        <button type="button" id="0" class="symbol">0</button>
+                        <button type="button" id="." class="symbol">.</button>
+                        <button type="button" id="/" class="symbol">/</button>
+
+                    </div>
+                </form>
+                <p>Your Ledger</p>
+                <div id="your-output" style="max-height: 70vh;overflow-y: scroll;"></div>
+            </td>
+            <td valign="top" width="50%">
+                <p>Community Ledger</p>
+                <div id="output" style="max-height: 70vh;overflow-y: scroll;"></div>
+            </td>
+        </tr>
+    </table>
+</body>
+
+</html>
